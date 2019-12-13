@@ -247,6 +247,43 @@ namespace IndividualPartB
                         Console.WriteLine(data);
                     }
                     Console.WriteLine($"Reader Open : {!reader.IsClosed}");
+
+                    //STUDENTS WITH MORE THAN ONE ASSIGNMENT
+                    //Building the query with string builder
+                    sb = new StringBuilder();
+                    sb
+                        .AppendLine("SELECT Student.FirstName,")
+                        .AppendLine("Student.LastName,")
+                        .AppendLine("COUNT(course.id) As Number_Of_Courses")
+                        .AppendLine("FROM Student")
+                        .AppendLine("INNER JOIN StudentEnrolled")
+                        .AppendLine("ON Student.ID = StudentEnrolled.StudentID")
+                        .AppendLine("INNER JOIN Course")
+                        .AppendLine("ON StudentEnrolled.CourseID = Course.ID")
+                        .AppendLine("GROUP BY Student.FirstName,Student.LastName")
+                        .AppendLine("HAVING COUNT(Course.ID)>1");
+
+                    SqlCommand cmdSelectStudentsWithMoreThanTwoCourses = new SqlCommand(sb.ToString(), connection);
+                    reader = cmdSelectStudentsWithMoreThanTwoCourses.ExecuteReader();
+                    Console.WriteLine($"Reader Open : {!reader.IsClosed}");
+                    var studentsWithCourses = new List<object>();
+                    while (reader.Read())
+                    {
+                        var newData = new
+                        {
+                            FirstName = reader.GetString(0),
+                            LastName = reader.GetString(1),
+                            CoursesNumber = reader.GetInt32(2)
+                        };
+                        studentsWithCourses.Add(newData);
+                    }
+                    reader.Close();
+                    foreach (var data in studentsWithCourses)
+                    {
+                        Console.WriteLine(data);
+                    }
+                    Console.WriteLine($"Reader Open : {!reader.IsClosed}");
+
                 }
             }
             catch (Exception e)
@@ -276,6 +313,8 @@ namespace IndividualPartB
                     CourseInsesrt();
 
                     AssignmentInsesrt();
+
+                    StudentPerCourseInsert();
                 }
             }
 
@@ -361,6 +400,32 @@ namespace IndividualPartB
 
             //Building query command and passing values above into parameteres of the query
             SqlCommand insertCommand = new SqlCommand($"INSERT INTO COURSE VALUES('{title}','{description}','{submissionDate}')", connection);
+            int result = insertCommand.ExecuteNonQuery();
+
+            Console.WriteLine("Rows affected : {0}", result);
+        }
+
+        private static void StudentPerCourseInsert()
+        {
+            //Requesting input from user
+            Console.WriteLine("Please type the firstName of the student you want to assign a lesson to");
+            string firstName = Console.ReadLine();
+            Console.WriteLine("Please type the lastName of the student you want to assign a lesson to");
+            string lastName = Console.ReadLine();
+            Console.WriteLine("Please type the Title of the course you want to assign the student at");
+            string courseTitle = Console.ReadLine();
+            Console.WriteLine("Please type the Stream of the course you want to assign the student at");
+            string courseStream = Console.ReadLine();
+
+            //Building query to run
+            var sb = new StringBuilder();
+            sb
+                .AppendLine("Insert into StudentEnrolled(StudentID,CourseID)")
+                .AppendLine($"Values((Select Student.ID from Student where FirstName = '{firstName}' and LastName = '{lastName}'),")
+                .AppendLine($"(select Course.ID from Course where Course.Title = '{courseTitle}' and Course.Stream = '{courseStream}'))");
+
+            //Building query command and passing values above into parameteres of the query
+            SqlCommand insertCommand = new SqlCommand(sb.ToString(), connection);
             int result = insertCommand.ExecuteNonQuery();
 
             Console.WriteLine("Rows affected : {0}", result);
