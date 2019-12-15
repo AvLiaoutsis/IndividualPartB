@@ -9,6 +9,7 @@ namespace IndividualPartB
 {
     class Program
     {
+        //Last 3 methods to look at
         static string conS = @"Server = DESKTOP-M87V4V7\SQLEXPRESS01; Database = Institution; Trusted_Connection = True";
         static SqlConnection connection = new SqlConnection(conS); //Initializing connection object
         static void Main(string[] args)
@@ -290,6 +291,7 @@ namespace IndividualPartB
             {
                 Console.WriteLine(e.Message);
             }
+            connection.Close();
 
 
 
@@ -395,7 +397,7 @@ namespace IndividualPartB
             string title = Console.ReadLine();
             Console.WriteLine("Please type the description of the Assignment");
             string description = Console.ReadLine();
-            Console.WriteLine("Please type the submission of the Assignment");
+            Console.WriteLine("Please type the submission date of the Assignment");
             DateTime submissionDate = DateTime.Parse(Console.ReadLine());
 
             //Building query command and passing values above into parameteres of the query
@@ -430,5 +432,64 @@ namespace IndividualPartB
 
             Console.WriteLine("Rows affected : {0}", result);
         }
+        private static void TrainerPerCourseInsert()
+        {
+            //Requesting input from user
+            Console.WriteLine("Please type the firstName of the trainer");
+            string firstName = Console.ReadLine();
+            Console.WriteLine("Please type the lastName of the trainer");
+            string lastName = Console.ReadLine();
+            Console.WriteLine("Please type the Title of the course you want to assign the trainer at");
+            string courseTitle = Console.ReadLine();
+            Console.WriteLine("Please type the Stream of the course you want to assign the trainer at");
+            string courseStream = Console.ReadLine();
+
+            //Building query to run
+            var sb = new StringBuilder();
+            sb
+                .AppendLine("Insert into TrainerEnrolled(TrainerID,CourseID)")
+                .AppendLine($"Values((Select Trainer.ID from Trainer where FirstName = '{firstName}' and LastName = '{lastName}'),")
+                .AppendLine($"(select Course.ID from Course where Course.Title = '{courseTitle}' and Course.Stream = '{courseStream}'))");
+
+            //Building query command and passing values above into parameteres of the query
+            SqlCommand insertCommand = new SqlCommand(sb.ToString(), connection);
+            int result = insertCommand.ExecuteNonQuery();
+
+            Console.WriteLine("Rows affected : {0}", result);
+        }
+
+        private static void AssignmentPerStudentPerCourseInsert()
+        {
+            //Requesting input from user
+            Console.WriteLine("Please type the Title of the Assignnment");
+            string title = Console.ReadLine();
+            Console.WriteLine("Please type the description of the Assignment");
+            string description = Console.ReadLine();
+            Console.WriteLine("Please type the submission date of the Assignment");
+            DateTime submissionDate = DateTime.Parse(Console.ReadLine());
+            Console.WriteLine("Please type the first name of the student you want to assign the assignment to");
+            string firstName = Console.ReadLine();
+            Console.WriteLine("Please type the last name of the student you want to assign the assignment to");
+            string lastName = Console.ReadLine();
+            Console.WriteLine("Please type the Title of the course to include this assignment");
+            string courseTitle = Console.ReadLine();
+            Console.WriteLine("Please type the Stream of the course to include this assignment");
+            string courseStream = Console.ReadLine();
+
+            //Building query to run
+            var sb = new StringBuilder();
+            sb
+                .AppendLine("Insert into TrainerEnrolled(TrainerID,CourseID)")
+                .AppendLine($"Values((Select Trainer.ID from Trainer where FirstName = '{firstName}' and LastName = '{lastName}'),")
+                .AppendLine($"(select Course.ID from Course where Course.Title = '{courseTitle}' and Course.Stream = '{courseStream}'))");
+
+            //Building query command and passing values above into parameteres of the query
+            SqlCommand insertCommand = new SqlCommand(sb.ToString(), connection);
+            int result = insertCommand.ExecuteNonQuery();
+
+            Console.WriteLine("Rows affected : {0}", result);
+        }
+
+
     }
 }
